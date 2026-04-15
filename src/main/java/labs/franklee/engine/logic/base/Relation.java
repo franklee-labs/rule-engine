@@ -1,7 +1,8 @@
 package labs.franklee.engine.logic.base;
 
-import java.util.List;
+import labs.franklee.engine.logic.path.PathGroup;
 
 public abstract class Relation extends Node {
-    private List<Relation> children;
+
+    public abstract PathGroup calculate();
 }

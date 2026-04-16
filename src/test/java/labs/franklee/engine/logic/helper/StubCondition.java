@@ -1,5 +1,6 @@
 package labs.franklee.engine.logic.helper;
 
+import labs.franklee.engine.context.Context;
 import labs.franklee.engine.logic.base.Condition;
 
 /**
@@ -21,5 +22,10 @@ public class StubCondition extends Condition {
     @Override
     public Condition negate() {
         return new StubCondition("!" + name);
+    }
+
+    @Override
+    public boolean evaluate(Context context) {
+        return false;
     }
 }

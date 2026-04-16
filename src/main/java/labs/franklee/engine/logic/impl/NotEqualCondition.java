@@ -1,5 +1,6 @@
 package labs.franklee.engine.logic.impl;
 
+import labs.franklee.engine.context.Context;
 import labs.franklee.engine.logic.base.Condition;
 
 import java.math.BigDecimal;
@@ -35,5 +36,10 @@ public class NotEqualCondition extends Condition {
     @Override
     public Condition negate() {
         return new EqualCondition(this.key, this.rawValue, this.valueType);
+    }
+
+    @Override
+    public boolean evaluate(Context context) {
+        return false;
     }
 }

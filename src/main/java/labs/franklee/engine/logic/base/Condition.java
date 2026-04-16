@@ -1,5 +1,6 @@
 package labs.franklee.engine.logic.base;
 
+import labs.franklee.engine.context.Context;
 import labs.franklee.engine.logic.impl.AND;
 import labs.franklee.engine.logic.path.Path;
 
@@ -13,5 +14,7 @@ public abstract class Condition extends Node implements Negatable<Condition> {
     public Relation resolve() {
         return new AND(new Path().addCondition(this));
     }
+
+    public abstract boolean evaluate(Context context);
 
 }

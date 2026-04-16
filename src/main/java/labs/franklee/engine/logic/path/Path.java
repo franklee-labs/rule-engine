@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Path {
-    private List<Condition> conditions = new ArrayList<>();
+    private final List<Condition> conditions = new ArrayList<>();
 
     public Path addCondition(Condition condition) {
         this.conditions.add(condition);

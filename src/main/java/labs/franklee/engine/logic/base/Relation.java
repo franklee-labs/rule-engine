@@ -2,7 +2,23 @@ package labs.franklee.engine.logic.base;
 
 import labs.franklee.engine.logic.path.PathGroup;
 
-public abstract class Relation extends Node {
+public abstract class Relation extends Node implements Negatable<Relation> {
 
-    public abstract PathGroup calculate();
+    protected PathGroup pathGroup;
+
+    public abstract boolean validate();
+
+    public abstract RelationType relation();
+
+    public Relation() {
+        this.type = NodeType.Relation;
+    }
+
+    public void setPathGroup(PathGroup pathGroup) {
+        this.pathGroup = pathGroup;
+    }
+
+    public PathGroup getPathGroup() {
+        return this.pathGroup;
+    }
 }

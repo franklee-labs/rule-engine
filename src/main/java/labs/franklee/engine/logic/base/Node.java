@@ -20,10 +20,6 @@ public abstract class Node {
         return type;
     }
 
-    public void setType(NodeType type) {
-        this.type = type;
-    }
-
     public List<Node> getChildren() {
         return children;
     }
@@ -31,4 +27,7 @@ public abstract class Node {
     public void setChildren(List<Node> children) {
         this.children = children;
     }
+
+    public abstract Relation resolve();
+
 }

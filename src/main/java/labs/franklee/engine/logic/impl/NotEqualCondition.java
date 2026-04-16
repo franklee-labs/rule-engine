@@ -4,7 +4,7 @@ import labs.franklee.engine.logic.base.Condition;
 
 import java.math.BigDecimal;
 
-public class EqualCondition extends Condition {
+public class NotEqualCondition extends Condition {
 
     private final String key;
 
@@ -18,7 +18,7 @@ public class EqualCondition extends Condition {
 
     private Boolean boolValue = null;
 
-    public EqualCondition(String key, String value, ValueType valueType) {
+    public NotEqualCondition(String key, String value, ValueType valueType) {
         super();
         this.key = key;
         this.rawValue = value;
@@ -34,6 +34,6 @@ public class EqualCondition extends Condition {
 
     @Override
     public Condition negate() {
-        return new NotEqualCondition(this.key, this.rawValue, this.valueType);
+        return new EqualCondition(this.key, this.rawValue, this.valueType);
     }
 }

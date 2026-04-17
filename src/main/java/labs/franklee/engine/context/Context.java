@@ -13,8 +13,6 @@ public class Context {
 
     private Map<String, Object> evalParams;
 
-    private boolean result;
-
     public Context(Map<String, Object> map) {
         // remove null key and null value
         Map<String, Object> mutableMap = new HashMap<>(map);
@@ -48,7 +46,4 @@ public class Context {
         return this.evalParams;
     }
 
-    public boolean result() {
-        return this.result;
-    }
 }

@@ -19,7 +19,7 @@ public abstract class Condition extends Node implements Negatable<Condition> {
         this.priority = priority;
     }
 
-    public int getPriority() {
+    public final int getPriority() {
         return this.priority;
     }
 
@@ -29,7 +29,7 @@ public abstract class Condition extends Node implements Negatable<Condition> {
 
     public void compile() throws Exception {}
 
-    public void build() throws Exception {
+    public final void build() throws Exception {
         if (!this.validate()) {
             throw new InvalidConditionException();
         }
@@ -37,11 +37,11 @@ public abstract class Condition extends Node implements Negatable<Condition> {
     }
 
     @Override
-    public Relation resolve() {
+    public final Relation resolve() {
         return new AND(new Path().addCondition(this));
     }
 
-    public boolean execute(Context context) {
+    public final boolean execute(Context context) {
         this.before(context);
         boolean result = this.evaluate(context);
         this.after(context, result);

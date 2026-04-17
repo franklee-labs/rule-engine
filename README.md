@@ -1,2 +1,2 @@
-# rule-engine
+# Celero
 An easy use rule engine.

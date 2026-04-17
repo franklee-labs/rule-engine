@@ -1,0 +1,56 @@
+package labs.franklee.celero.logic.base;
+
+import labs.franklee.celero.context.Context;
+import labs.franklee.celero.exceptions.InvalidConditionException;
+import labs.franklee.celero.logic.impl.AND;
+import labs.franklee.celero.logic.path.Path;
+
+public abstract class Condition extends Node implements Negatable<Condition> {
+
+    private final int priority;
+
+    public Condition() {
+        this.type = NodeType.Condition;
+        this.priority = Priority.DEFAULT;
+    }
+
+    public Condition(int priority) {
+        this.type = NodeType.Condition;
+        this.priority = priority;
+    }
+
+    public final int getPriority() {
+        return this.priority;
+    }
+
+    public boolean validate() {
+        return true;
+    }
+
+    public void compile() throws Exception {}
+
+    public final void build() throws Exception {
+        if (!this.validate()) {
+            throw new InvalidConditionException();
+        }
+        this.compile();
+    }
+
+    @Override
+    public final Relation resolve() {
+        return new AND(new Path().addCondition(this));
+    }
+
+    public final boolean execute(Context context) {
+        this.before(context);
+        boolean result = this.evaluate(context);
+        this.after(context, result);
+        return result;
+    }
+
+    public void before(Context context) {}
+
+    public abstract boolean evaluate(Context context);
+
+    public void after(Context context, boolean result) {}
+}

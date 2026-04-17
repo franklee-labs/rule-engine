@@ -10,6 +10,7 @@ public class CelCondition extends Condition {
     private final CelRuntime.Program program;
 
     public CelCondition(String expression) {
+        this.setName("CelCondition");
         try {
             this.expression = expression;
             this.program = CelUtils.buildProgram(expression);

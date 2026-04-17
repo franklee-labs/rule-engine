@@ -36,6 +36,21 @@ public class CelUtils {
         return builder.build();
     }
 
+    /**
+     * Normalizes a value to a CEL-compatible type.
+     * Handles deserialization artifacts (e.g. BigDecimal from JSON) that CEL cannot accept directly.
+     * BigDecimal / Integer / Float → Long or Double; String and Boolean pass through unchanged.
+     */
+    static Object toCelValue(Object value) {
+        if (value instanceof java.math.BigDecimal bd) {
+            java.math.BigDecimal stripped = bd.stripTrailingZeros();
+            return stripped.scale() <= 0 ? stripped.longValueExact() : stripped.doubleValue();
+        }
+        if (value instanceof Integer i) return i.longValue();
+        if (value instanceof Float f) return f.doubleValue();
+        return value;
+    }
+
     static Set<String> extractTopVarNames(String expression) throws Exception {
         Cel parser = CelFactory.standardCelBuilder().build();
         CelAbstractSyntaxTree parsed = parser.parse(expression).getAst();

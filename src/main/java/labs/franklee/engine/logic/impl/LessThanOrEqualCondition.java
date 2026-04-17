@@ -13,30 +13,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+public class LessThanOrEqualCondition extends Condition {
 
-public class EqualCondition extends Condition {
-
-    private final static String EQUAL = " == ";
+    private static final String LTE = " <= ";
 
     private final String key;
-
     private final ValueType valueType;
-
     private final String value;
 
     private String expression;
-
     private Set<String> expressionValueVars;
-
     private CelRuntime.Program program;
-
     private Map<String, Object> builtinParams;
-
     private Map<String, Object> evalParams;
 
-    public EqualCondition(String key, String value, ValueType valueType) {
+    public LessThanOrEqualCondition(String key, String value, ValueType valueType) {
         super();
-        this.setName("EqualCondition");
+        this.setName("LessThanOrEqualCondition");
         this.key = key;
         this.value = value;
         this.valueType = valueType;
@@ -57,8 +50,9 @@ public class EqualCondition extends Condition {
 
     @Override
     public Condition negate() {
-        return new NotEqualCondition(this.key, this.value, this.valueType);
+        return new GreaterThanCondition(this.key, this.value, this.valueType);
     }
+
 
     @Override
     public void before(Context context) {
@@ -86,40 +80,23 @@ public class EqualCondition extends Condition {
 
     public void compile() throws Exception {
         if (this.valueType == ValueType.Expression) {
-            this.expression = this.key + EQUAL + this.value;
-            this.buildCelProgram(null);
-        } else if (this.valueType == ValueType.String) {
-            String valKey = Constant.BUILTIN_KEY + "STR_001";
-            this.expression = this.key + EQUAL + valKey;
-            this.buildCelProgram(Map.of(valKey, SimpleType.STRING));
-            this.builtinParams = Map.of(valKey, this.value);
-        } else if (this.valueType == ValueType.Boolean) {
-            boolean b = Boolean.parseBoolean(this.value);
-            if (b) {
-                this.expression = this.key + EQUAL + "true";
-            } else {
-                this.expression = this.key + EQUAL + "false";
-            }
+            this.expression = this.key + LTE + this.value;
             this.buildCelProgram(null);
         } else if (this.valueType == ValueType.Number) {
             String valKey = Constant.BUILTIN_KEY + "NUM_001";
-            this.expression = this.key + EQUAL + valKey;
-            BigDecimal bd = new BigDecimal(this.value);
-            BigDecimal striped = bd.stripTrailingZeros();
+            this.expression = this.key + LTE + valKey;
+            BigDecimal bd = new BigDecimal(this.value).stripTrailingZeros();
             Map<String, CelType> celType;
-            if (striped.scale() <= 0) {
-                // whole number → long, exact
+            if (bd.scale() <= 0) {
                 celType = Map.of(valKey, SimpleType.INT);
-                this.builtinParams = Map.of(valKey, striped.longValueExact());
+                this.builtinParams = Map.of(valKey, bd.longValueExact());
             } else {
-                // decimal → double, IEEE 754 precision
                 celType = Map.of(valKey, SimpleType.DOUBLE);
-                this.builtinParams = Map.of(valKey, striped.doubleValue());
+                this.builtinParams = Map.of(valKey, bd.doubleValue());
             }
             this.buildCelProgram(celType);
         } else {
-            throw new UnsupportedOperationException("Unsupported ValueType");
+            throw new UnsupportedOperationException("LessThanOrEqualCondition only supports Number and Expression");
         }
     }
-
 }

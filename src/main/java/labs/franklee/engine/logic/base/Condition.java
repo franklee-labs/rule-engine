@@ -6,8 +6,24 @@ import labs.franklee.engine.logic.path.Path;
 
 public abstract class Condition extends Node implements Negatable<Condition> {
 
+    private final int priority;
+
     public Condition() {
         this.type = NodeType.Condition;
+        this.priority = Priority.DEFAULT;
+    }
+
+    public Condition(int priority) {
+        this.type = NodeType.Condition;
+        this.priority = priority;
+    }
+
+    public int getPriority() {
+        return this.priority;
+    }
+
+    public boolean validate() {
+        return true;
     }
 
     @Override

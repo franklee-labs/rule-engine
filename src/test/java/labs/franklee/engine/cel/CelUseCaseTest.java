@@ -117,6 +117,89 @@ class CelUseCaseTest {
         assertTrue((Boolean) result);
     }
 
+    // ---- Null / missing intermediate field ----
+
+    @Test
+    void nestedMap_intermediateKeyMissing_throwsAtEval() throws Exception {
+        // params.user.address.city — "address" key does not exist in user map
+        CelAbstractSyntaxTree ast = cel.compile("params.user.address.city == \"Beijing\"").getAst();
+        CelRuntime.Program program = cel.createProgram(ast);
+
+        Map<String, Object> params = Map.of(
+                "user", Map.of("name", "frank")   // no "address" key
+        );
+        assertThrows(Exception.class, () -> program.eval(Map.of("params", params)));
+    }
+
+    @Test
+    void nestedMap_intermediateKeyMissing_nullCheckExpression_throwsAtEval() throws Exception {
+        // even a null check on the leaf still throws if an intermediate key is missing
+        CelAbstractSyntaxTree ast = cel.compile("params.user.address == null").getAst();
+        CelRuntime.Program program = cel.createProgram(ast);
+
+        Map<String, Object> params = Map.of(
+                "user", Map.of("name", "frank")   // no "address" key
+        );
+
+        assertThrows(Exception.class, () -> program.eval(Map.of("params", params)));
+    }
+
+    @Test
+    void nestedMap_existenceGuard_preventsException() throws Exception {
+        // guard with "in" operator before accessing deeper field
+        CelAbstractSyntaxTree ast = cel.compile(
+                "\"address\" in params.user && params.user.address.city == \"Beijing\""
+        ).getAst();
+        CelRuntime.Program program = cel.createProgram(ast);
+
+        Map<String, Object> paramsWithout = Map.of("user", Map.of("name", "frank"));
+        Map<String, Object> paramsWith    = Map.of("user", Map.of("address", Map.of("city", "Beijing")));
+
+        assertFalse((Boolean) program.eval(Map.of("params", paramsWithout)));
+        assertTrue((Boolean)  program.eval(Map.of("params", paramsWith)));
+    }
+
+    // TODO: For dotted-path field access (e.g. user.address.city), every segment — both
+    //       intermediate and the final field — must exist in the map at eval time. A missing
+    //       segment at any position causes a runtime exception. Callers are responsible for
+    //       ensuring full path existence, or use existence guards as shown above. Document this.
+
+    // ---- List / array access ----
+
+    @Test
+    void list_indexAccess_returnsElement() throws Exception {
+        // params.items[0] == "a"
+        CelAbstractSyntaxTree ast = cel.compile("params.items[0] == \"a\"").getAst();
+        CelRuntime.Program program = cel.createProgram(ast);
+
+        Object result = program.eval(Map.of("params", Map.of("items", java.util.List.of("a", "b", "c"))));
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    void list_indexAccess_nestedField() throws Exception {
+        // params.orders[0].price > 100.0
+        CelAbstractSyntaxTree ast = cel.compile("params.orders[0].price > 100.0").getAst();
+        CelRuntime.Program program = cel.createProgram(ast);
+
+        Object result = program.eval(Map.of("params", Map.of(
+                "orders", java.util.List.of(Map.of("price", 150.0))
+        )));
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
+    void list_outOfBounds_throwsAtEval() throws Exception {
+        CelAbstractSyntaxTree ast = cel.compile("params.items[5] == \"a\"").getAst();
+        CelRuntime.Program program = cel.createProgram(ast);
+
+        assertThrows(Exception.class, () -> program.eval(
+                Map.of("params", Map.of("items", java.util.List.of("a", "b")))
+        ));
+    }
+
     // ---- Deep nested map (3 levels) ----
 
     @Test

@@ -11,6 +11,7 @@ public class NegateCelCondition extends Condition {
     private final String expression;
 
     NegateCelCondition(CelCondition origin) {
+        this.setName("NegateCelCondition");
         try {
             this.origin = origin;
             this.expression = "!(" + origin.getExpression() + ")";

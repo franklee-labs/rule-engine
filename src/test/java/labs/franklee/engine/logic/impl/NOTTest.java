@@ -57,7 +57,7 @@ class NOTTest {
     }
 
     @Test
-    void resolve_andChild_returnsOrWithNegatedPaths() {
+    void resolve_andChild_returnsOrWithNegatedPaths() throws Exception {
         // NOT(AND(A, B)) = OR[ [NOT(A)], [NOT(B)] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -73,7 +73,7 @@ class NOTTest {
     }
 
     @Test
-    void resolve_orChild_returnsAndWithNegatedPath() {
+    void resolve_orChild_returnsAndWithNegatedPath() throws Exception {
         // NOT(OR(A, B)) = AND[ [NOT(A), NOT(B)] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -88,7 +88,7 @@ class NOTTest {
     }
 
     @Test
-    void resolve_conditionChild_returnsAndWithNegatedCondition() {
+    void resolve_conditionChild_returnsAndWithNegatedCondition() throws Exception {
         // NOT(A) = AND[ [NOT(A)] ]
         StubCondition a = new StubCondition("a");
         NOT not = new NOT();
@@ -110,7 +110,7 @@ class NOTTest {
     // ---- negate() ----
 
     @Test
-    void negate_relationChild_returnsInnerRelationDirectly() {
+    void negate_relationChild_returnsInnerRelationDirectly() throws Exception {
         // NOT.negate() with a Relation child performs double-negation elimination
         AND inner = new AND();
         inner.setChildren(List.of(new StubCondition("a")));
@@ -121,7 +121,7 @@ class NOTTest {
     }
 
     @Test
-    void negate_conditionChild_returnsUnresolvedAndWithConditionAsChild() {
+    void negate_conditionChild_returnsUnresolvedAndWithConditionAsChild() throws Exception {
         // NOT.negate() with a Condition child returns an unresolved AND (children set, no pathGroup)
         // so the caller can chain .resolve() — consistent with AND.negate() and OR.negate()
         StubCondition c = new StubCondition("a");

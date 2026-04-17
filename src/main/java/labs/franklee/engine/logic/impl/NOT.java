@@ -21,7 +21,7 @@ public class NOT extends Relation {
     }
 
     @Override
-    public Relation resolve() {
+    public Relation resolve() throws Exception {
         if (this.getChildren().size() != 1) {
             throw new RuntimeException("Not node can only hold exactly one node.");
         }
@@ -33,7 +33,7 @@ public class NOT extends Relation {
     }
 
     @Override
-    public Relation negate() {
+    public Relation negate() throws Exception {
         Node node = this.getChildren().getFirst();
         if (node instanceof Relation) {
             return (Relation) node;

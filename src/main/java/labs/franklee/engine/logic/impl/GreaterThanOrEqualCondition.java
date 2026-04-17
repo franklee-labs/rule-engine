@@ -6,8 +6,8 @@ import dev.cel.common.types.SimpleType;
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.engine.context.Context;
 import labs.franklee.engine.exceptions.EvalException;
-import labs.franklee.engine.exceptions.InvalidConditionException;
 import labs.franklee.engine.logic.base.Condition;
+import labs.franklee.engine.logic.base.ValueType;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -50,10 +50,7 @@ public class GreaterThanOrEqualCondition extends Condition {
     @Override
     public Condition negate() throws Exception {
         Condition condition = new LessThanCondition(this.key, this.value, this.valueType);
-        if (!condition.validate()) {
-            throw new InvalidConditionException();
-        }
-        condition.compile();
+        condition.build();
         return condition;
     }
 

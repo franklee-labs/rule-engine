@@ -2,7 +2,6 @@ package labs.franklee.engine.logic.impl;
 
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.engine.context.Context;
-import labs.franklee.engine.exceptions.InvalidConditionException;
 import labs.franklee.engine.logic.base.Condition;
 
 public class CelCondition extends Condition {
@@ -23,10 +22,7 @@ public class CelCondition extends Condition {
     @Override
     public Condition negate() throws Exception {
         Condition condition = new NegateCelCondition(this);
-        if (!condition.validate()) {
-            throw new InvalidConditionException();
-        }
-        condition.compile();
+        condition.build();
         return condition;
     }
 

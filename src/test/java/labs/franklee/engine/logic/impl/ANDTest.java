@@ -90,7 +90,7 @@ class ANDTest {
     }
 
     @Test
-    void resolve_singleConditionChild_returnsAndWithOnePath() {
+    void resolve_singleConditionChild_returnsAndWithOnePath() throws Exception {
         StubCondition a = new StubCondition("a");
         AND and = new AND();
         and.setChildren(List.of(a));
@@ -101,7 +101,7 @@ class ANDTest {
     }
 
     @Test
-    void resolve_singleRelationChild_delegatesToChildResolve() {
+    void resolve_singleRelationChild_delegatesToChildResolve() throws Exception {
         // AND wrapping another AND: outer delegates to inner
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -115,7 +115,7 @@ class ANDTest {
     }
 
     @Test
-    void resolve_andPlusAnd_mergesIntoSinglePath() {
+    void resolve_andPlusAnd_mergesIntoSinglePath() throws Exception {
         // AND(A, B) -> AND[ [A, B] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -128,7 +128,7 @@ class ANDTest {
     }
 
     @Test
-    void resolve_andPlusOr_expandsToPaths() {
+    void resolve_andPlusOr_expandsToPaths() throws Exception {
         // AND(A, OR(B, C)) -> OR[ [A,B], [A,C] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -145,7 +145,7 @@ class ANDTest {
     }
 
     @Test
-    void resolve_orPlusAnd_mergesOrPathsWithCondition() {
+    void resolve_orPlusAnd_mergesOrPathsWithCondition() throws Exception {
         // AND(OR(A, B), C) -> OR[ [A,C], [B,C] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -161,7 +161,7 @@ class ANDTest {
     }
 
     @Test
-    void resolve_orPlusOr_cartesianProduct() {
+    void resolve_orPlusOr_cartesianProduct() throws Exception {
         // AND(OR(A,B), OR(C,D)) -> OR[ [A,C], [A,D], [B,C], [B,D] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -180,7 +180,7 @@ class ANDTest {
     }
 
     @Test
-    void resolve_threeConditions_coversCurrentNodeAlreadySetBranch() {
+    void resolve_threeConditions_coversCurrentNodeAlreadySetBranch() throws Exception {
         // AND(A, B, C) -> AND[ [A, B, C] ]
         // The second loop iteration (i=2) hits the currentNode-already-set path
         StubCondition a = new StubCondition("a");
@@ -197,7 +197,7 @@ class ANDTest {
     // ---- negate() ----
 
     @Test
-    void negate_twoConditions_returnsUnresolvedOrWithNegatedChildren() {
+    void negate_twoConditions_returnsUnresolvedOrWithNegatedChildren() throws Exception {
         // NOT(A AND B) = A_neg OR B_neg
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -210,7 +210,7 @@ class ANDTest {
     }
 
     @Test
-    void negate_resolvedResult_isOrWithNegatedPaths() {
+    void negate_resolvedResult_isOrWithNegatedPaths() throws Exception {
         // Verify that negate().resolve() produces the correct PathGroup
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");

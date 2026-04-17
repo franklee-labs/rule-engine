@@ -20,27 +20,29 @@ class CelConditionTest {
     // ---- CelCondition basic evaluation ----
 
     @Test
-    void execute_true() {
+    void execute_true() throws Exception {
         CelCondition c = new CelCondition("age > 18");
+        c.compile();
         assertTrue(c.execute(ctx("age", 25L)));
     }
 
     @Test
-    void execute_false() {
+    void execute_false() throws Exception {
         CelCondition c = new CelCondition("age > 18");
+        c.compile();
         assertFalse(c.execute(ctx("age", 16L)));
     }
 
     // ---- negate() returns NegateCelCondition ----
 
     @Test
-    void negate_returnsNegateCelCondition() {
+    void negate_returnsNegateCelCondition() throws Exception {
         CelCondition c = new CelCondition("age > 18");
         assertInstanceOf(NegateCelCondition.class, c.negate());
     }
 
     @Test
-    void negate_flipsResult() {
+    void negate_flipsResult() throws Exception {
         CelCondition c = new CelCondition("age > 18");
         var negated = c.negate();
 
@@ -51,7 +53,7 @@ class CelConditionTest {
     // ---- NegateCelCondition.negate() returns the original ----
 
     @Test
-    void negate_expressionIsWrappedWithBang() {
+    void negate_expressionIsWrappedWithBang() throws Exception {
         CelCondition c = new CelCondition("age > 18");
         NegateCelCondition negated = (NegateCelCondition) c.negate();
 
@@ -59,7 +61,7 @@ class CelConditionTest {
     }
 
     @Test
-    void doubleNegate_returnsSameOrigin() {
+    void doubleNegate_returnsSameOrigin() throws Exception {
         CelCondition origin = new CelCondition("age > 18");
         var negated = (NegateCelCondition) origin.negate();
 
@@ -68,8 +70,9 @@ class CelConditionTest {
     }
 
     @Test
-    void doubleNegate_sameResultAsOriginal() {
+    void doubleNegate_sameResultAsOriginal() throws Exception {
         CelCondition origin = new CelCondition("age > 18");
+        origin.compile();
         var doubleNegated = origin.negate().negate();
 
         Context pass = ctx("age", 25L);

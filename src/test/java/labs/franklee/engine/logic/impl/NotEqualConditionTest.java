@@ -3,6 +3,7 @@ package labs.franklee.engine.logic.impl;
 import labs.franklee.engine.context.Context;
 import labs.franklee.engine.logic.base.Relation;
 import labs.franklee.engine.logic.base.RelationType;
+import labs.franklee.engine.logic.base.ValueType;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -20,7 +21,7 @@ class NotEqualConditionTest {
     // ---- negate ----
 
     @Test
-    void negate_returnsEqualCondition() {
+    void negate_returnsEqualCondition() throws Exception {
         assertInstanceOf(EqualCondition.class,
                 new NotEqualCondition("status", "active", ValueType.String).negate());
         assertInstanceOf(EqualCondition.class,

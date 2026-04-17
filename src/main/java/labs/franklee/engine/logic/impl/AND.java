@@ -29,7 +29,7 @@ public class AND extends Relation {
     }
 
     @Override
-    public Relation resolve() {
+    public Relation resolve() throws Exception {
         if (this.getChildren().isEmpty()) {
             throw new RuntimeException("And node mush have at least one node.");
         }
@@ -99,7 +99,7 @@ public class AND extends Relation {
     }
 
     @Override
-    public Relation negate() {
+    public Relation negate() throws Exception {
         Relation or = new OR();
         List<Node> nodes = new ArrayList<>(this.getChildren().size());
         for (Node child : this.getChildren()) {

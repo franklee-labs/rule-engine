@@ -1,6 +1,7 @@
 package labs.franklee.engine.logic.base;
 
 import labs.franklee.engine.context.Context;
+import labs.franklee.engine.exceptions.InvalidConditionException;
 import labs.franklee.engine.logic.impl.AND;
 import labs.franklee.engine.logic.path.Path;
 
@@ -27,6 +28,13 @@ public abstract class Condition extends Node implements Negatable<Condition> {
     }
 
     public void compile() throws Exception {}
+
+    public void build() throws Exception {
+        if (!this.validate()) {
+            throw new InvalidConditionException();
+        }
+        this.compile();
+    }
 
     @Override
     public Relation resolve() {

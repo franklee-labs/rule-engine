@@ -24,7 +24,7 @@ public class OR extends Relation {
     }
 
     @Override
-    public Relation resolve() {
+    public Relation resolve() throws Exception {
         if (this.getChildren().size() < 2) {
             throw new RuntimeException("Or node mush have at least two node.");
         }
@@ -47,7 +47,7 @@ public class OR extends Relation {
     }
 
     @Override
-    public Relation negate() {
+    public Relation negate() throws Exception {
         Relation and = new AND();
         List<Node> nodes = new ArrayList<>();
         for (Node child : this.getChildren()) {

@@ -52,7 +52,7 @@ class ORTest {
     }
 
     @Test
-    void resolve_twoConditions_returnsTwoPaths() {
+    void resolve_twoConditions_returnsTwoPaths() throws Exception {
         // OR(A, B) -> OR[ [A], [B] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -66,7 +66,7 @@ class ORTest {
     }
 
     @Test
-    void resolve_threeConditions_coversCurrentNodeAlreadySetBranch() {
+    void resolve_threeConditions_coversCurrentNodeAlreadySetBranch() throws Exception {
         // OR(A, B, C) -> OR[ [A], [B], [C] ]
         // The second loop iteration (i=2) hits the currentNode-already-set path
         StubCondition a = new StubCondition("a");
@@ -80,7 +80,7 @@ class ORTest {
     }
 
     @Test
-    void resolve_conditionAndAndNode_unionOfPaths() {
+    void resolve_conditionAndAndNode_unionOfPaths() throws Exception {
         // OR(A, AND(B, C)) -> OR[ [A], [B,C] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -99,7 +99,7 @@ class ORTest {
     // ---- negate() ----
 
     @Test
-    void negate_twoConditions_returnsUnresolvedAndWithNegatedChildren() {
+    void negate_twoConditions_returnsUnresolvedAndWithNegatedChildren() throws Exception {
         // NOT(A OR B) = NOT(A) AND NOT(B)
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");
@@ -111,7 +111,7 @@ class ORTest {
     }
 
     @Test
-    void negate_resolvedResult_isAndWithNegatedPath() {
+    void negate_resolvedResult_isAndWithNegatedPath() throws Exception {
         // NOT(A OR B).resolve() = AND[ [NOT(A), NOT(B)] ]
         StubCondition a = new StubCondition("a");
         StubCondition b = new StubCondition("b");

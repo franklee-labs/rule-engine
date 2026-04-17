@@ -1,4 +1,4 @@
-package labs.franklee.engine.logic.impl;
+package labs.franklee.engine.logic.base;
 
 public enum ValueType {
     String,

@@ -46,6 +46,6 @@ public abstract class Node {
         this.description = description;
     }
 
-    public abstract Relation resolve();
+    public abstract Relation resolve() throws Exception;
 
 }

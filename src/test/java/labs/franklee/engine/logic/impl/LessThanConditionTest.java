@@ -3,6 +3,7 @@ package labs.franklee.engine.logic.impl;
 import labs.franklee.engine.context.Context;
 import labs.franklee.engine.logic.base.Relation;
 import labs.franklee.engine.logic.base.RelationType;
+import labs.franklee.engine.logic.base.ValueType;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +19,7 @@ class LessThanConditionTest {
     // ---- negate ----
 
     @Test
-    void negate_returnsGreaterThanOrEqualCondition() {
+    void negate_returnsGreaterThanOrEqualCondition() throws Exception {
         assertInstanceOf(GreaterThanOrEqualCondition.class,
                 new LessThanCondition("age", "18", ValueType.Number).negate());
     }

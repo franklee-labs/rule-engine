@@ -22,7 +22,7 @@ class InConditionTest {
     // ---- negate ----
 
     @Test
-    void negate_returnsNotInCondition() {
+    void negate_returnsNotInCondition() throws Exception {
         assertInstanceOf(NotInCondition.class,
                 new InCondition("role", List.of("admin")).negate());
     }

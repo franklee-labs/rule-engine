@@ -3,12 +3,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>rule-engine</groupId>
-  <artifactId>rule-engine</artifactId>
+  <groupId>labs.franklee</groupId>
+  <artifactId>celero</artifactId>
   <version>1.0.0</version>
 
-  <name>rule-engine</name>
-  <url>https://github.com/franklee-labs/rule-engine</url>
+  <name>Celero</name>
+  <url>https://github.com/franklee-labs/Celero</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

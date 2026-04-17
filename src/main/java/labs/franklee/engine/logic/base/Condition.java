@@ -15,6 +15,16 @@ public abstract class Condition extends Node implements Negatable<Condition> {
         return new AND(new Path().addCondition(this));
     }
 
+    public boolean execute(Context context) {
+        this.before(context);
+        boolean result = this.evaluate(context);
+        this.after(context, result);
+        return result;
+    }
+
+    public void before(Context context) {}
+
     public abstract boolean evaluate(Context context);
 
+    public void after(Context context, boolean result) {}
 }

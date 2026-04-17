@@ -4,4 +4,5 @@ public enum ValueType {
     String,
     Number,
     Boolean,
+    Expression,
 }

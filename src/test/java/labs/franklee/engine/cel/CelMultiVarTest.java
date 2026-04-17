@@ -192,6 +192,20 @@ class CelMultiVarTest {
     }
 
     @Test
+    void fieldExists_orderContext_compareValue() throws Exception {
+        CelAbstractSyntaxTree ast = cel.compile("user.balance > order.price").getAst();
+        CelRuntime.Program program = cel.createProgram(ast);
+
+        Object result = program.eval(Map.of(
+                "user",    Map.of("balance", 100.0),
+                "order",   Map.of("price", 90.0),
+                "context", Map.of()
+        ));
+
+        assertTrue((Boolean) result);
+    }
+
+    @Test
     void fieldExists_lackOrderParam_notUsed() throws Exception {
         // declared order param is not passed
         CelAbstractSyntaxTree ast = cel.compile("\"role\" in user").getAst();

@@ -7,19 +7,13 @@ import labs.franklee.engine.logic.base.Condition;
 public class NegateCelCondition extends Condition {
 
     private final CelCondition origin;
-    private final CelRuntime.Program program;
+    private CelRuntime.Program program;
     private final String expression;
 
     NegateCelCondition(CelCondition origin) {
         this.setName("NegateCelCondition");
-        try {
-            this.origin = origin;
-            this.expression = "!(" + origin.getExpression() + ")";
-            this.program = CelUtils.buildProgram(this.expression);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Failed to negate CEL expression: " + origin.getExpression(), e);
-        }
+        this.origin = origin;
+        this.expression = "!(" + origin.getExpression() + ")";
     }
 
     public String getExpression() {
@@ -29,6 +23,11 @@ public class NegateCelCondition extends Condition {
     @Override
     public Condition negate() {
         return origin;
+    }
+
+    @Override
+    public void compile() throws Exception {
+        this.program = CelUtils.buildProgram(this.expression);
     }
 
     @Override

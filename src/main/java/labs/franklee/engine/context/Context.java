@@ -11,6 +11,8 @@ public class Context {
 
     private final Map<String, Object> params;
 
+    private Map<String, Object> evalParams;
+
     private boolean result;
 
     public Context(Map<String, Object> map) {
@@ -34,8 +36,16 @@ public class Context {
         return params;
     }
 
-    public Object get(String key) {
-        return params.get(key);
+    public void buildEvalParams(Map<String, Object> builtinParam) {
+        Map<String, Object> map = new HashMap<>(this.params);
+        if (null != builtinParam) {
+            map.putAll(builtinParam);
+        }
+        this.evalParams = map;
+    }
+
+    public Map<String, Object> getEvalParam() {
+        return this.evalParams;
     }
 
     public boolean result() {

@@ -6,9 +6,9 @@ import dev.cel.common.types.SimpleType;
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.engine.context.Context;
 import labs.franklee.engine.exceptions.EvalException;
+import labs.franklee.engine.exceptions.InvalidConditionException;
 import labs.franklee.engine.logic.base.Condition;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +40,6 @@ public class InCondition extends Condition {
     private Set<String> expressionValueVars;
     private CelRuntime.Program program;
     private Map<String, Object> builtinParams;
-    private Map<String, Object> evalParams;
 
     public InCondition(String key, List<Object> values) {
         super();
@@ -50,8 +49,13 @@ public class InCondition extends Condition {
     }
 
     @Override
-    public Condition negate() {
-        return new NotInCondition(this.key, this.values);
+    public Condition negate() throws Exception {
+        Condition condition = new NotInCondition(this.key, this.values);
+        if (!condition.validate()) {
+            throw new InvalidConditionException();
+        }
+        condition.compile();
+        return condition;
     }
 
     @Override
@@ -61,22 +65,20 @@ public class InCondition extends Condition {
 
     @Override
     public void before(Context context) {
-        this.evalParams = new HashMap<>(context.getParams());
-        if (this.builtinParams != null) {
-            this.evalParams.putAll(this.builtinParams);
-        }
+        context.buildEvalParams(this.builtinParams);
     }
 
     @Override
     public boolean evaluate(Context context) {
         try {
-            Object eval = this.program.eval(this.evalParams);
+            Object eval = this.program.eval(context.getEvalParam());
             return eval instanceof Boolean b && b;
         } catch (Throwable e) {
             throw new EvalException(e);
         }
     }
 
+    @Override
     public void compile() throws Exception {
         this.expression = this.key + IN + LIST_KEY;
         List<Object> normalized = this.values.stream().map(CelUtils::toCelValue).toList();

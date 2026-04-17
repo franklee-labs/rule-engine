@@ -6,10 +6,10 @@ import dev.cel.common.types.SimpleType;
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.engine.context.Context;
 import labs.franklee.engine.exceptions.EvalException;
+import labs.franklee.engine.exceptions.InvalidConditionException;
 import labs.franklee.engine.logic.base.Condition;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,7 +25,6 @@ public class GreaterThanOrEqualCondition extends Condition {
     private Set<String> expressionValueVars;
     private CelRuntime.Program program;
     private Map<String, Object> builtinParams;
-    private Map<String, Object> evalParams;
 
     public GreaterThanOrEqualCondition(String key, String value, ValueType valueType) {
         super();
@@ -49,23 +48,25 @@ public class GreaterThanOrEqualCondition extends Condition {
     }
 
     @Override
-    public Condition negate() {
-        return new LessThanCondition(this.key, this.value, this.valueType);
+    public Condition negate() throws Exception {
+        Condition condition = new LessThanCondition(this.key, this.value, this.valueType);
+        if (!condition.validate()) {
+            throw new InvalidConditionException();
+        }
+        condition.compile();
+        return condition;
     }
 
 
     @Override
     public void before(Context context) {
-        this.evalParams = new HashMap<>(context.getParams());
-        if (this.builtinParams != null) {
-            this.evalParams.putAll(this.builtinParams);
-        }
+        context.buildEvalParams(this.builtinParams);
     }
 
     @Override
     public boolean evaluate(Context context) {
         try {
-            Object eval = this.program.eval(this.evalParams);
+            Object eval = this.program.eval(context.getEvalParam());
             return eval instanceof Boolean b && b;
         } catch (Throwable e) {
             throw new EvalException(e);
@@ -78,6 +79,7 @@ public class GreaterThanOrEqualCondition extends Condition {
         this.program = CelUtils.buildProgram(this.expression, cel);
     }
 
+    @Override
     public void compile() throws Exception {
         if (this.valueType == ValueType.Expression) {
             this.expression = this.key + GTE + this.value;

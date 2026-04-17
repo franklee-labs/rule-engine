@@ -36,6 +36,18 @@ public class CelUtils {
         return builder.build();
     }
 
+    static Set<String> extractTopVarNames(String expression) throws Exception {
+        Cel parser = CelFactory.standardCelBuilder().build();
+        CelAbstractSyntaxTree parsed = parser.parse(expression).getAst();
+        return CelNavigableAst.fromAst(parsed)
+                .getRoot()
+                .allNodes()
+                .filter(node -> node.getKind() == CelExpr.ExprKind.Kind.IDENT)
+                .map(node -> node.expr().ident().name())
+                .collect(Collectors.toSet());
+    }
+
+
     /**
      * Normalizes a value to a CEL-compatible type.
      * Handles deserialization artifacts (e.g. BigDecimal from JSON) that CEL cannot accept directly.
@@ -50,16 +62,4 @@ public class CelUtils {
         if (value instanceof Float f) return f.doubleValue();
         return value;
     }
-
-    static Set<String> extractTopVarNames(String expression) throws Exception {
-        Cel parser = CelFactory.standardCelBuilder().build();
-        CelAbstractSyntaxTree parsed = parser.parse(expression).getAst();
-        return CelNavigableAst.fromAst(parsed)
-                .getRoot()
-                .allNodes()
-                .filter(node -> node.getKind() == CelExpr.ExprKind.Kind.IDENT)
-                .map(node -> node.expr().ident().name())
-                .collect(Collectors.toSet());
-    }
-
 }

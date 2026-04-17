@@ -26,6 +26,8 @@ public abstract class Condition extends Node implements Negatable<Condition> {
         return true;
     }
 
+    public void compile() throws Exception {}
+
     @Override
     public Relation resolve() {
         return new AND(new Path().addCondition(this));

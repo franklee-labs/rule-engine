@@ -1,6 +1,7 @@
 package labs.franklee.celero.logic.impl;
 
 import labs.franklee.celero.context.Context;
+import labs.franklee.celero.exceptions.MissingParameterException;
 import labs.franklee.celero.logic.base.Relation;
 import labs.franklee.celero.logic.base.RelationType;
 import labs.franklee.celero.logic.base.ValueType;
@@ -154,6 +155,50 @@ class EqualConditionTest {
         // original context must not contain any builtin keys
         assertTrue(ctx.getParams().keySet().stream()
                 .noneMatch(k -> k.startsWith(Constant.BUILTIN_KEY)));
+    }
+
+    // ---- missing parameter: throws MissingParameterException instead of returning false ----
+
+    @Test
+    void missingParameter_topLevelVar_throwsMissingParameterException() throws Exception {
+        // top-level variable absent: eval() returns CelUnknownSet, must be distinguished from false
+        EqualCondition cond = new EqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        assertThrows(MissingParameterException.class, () -> cond.execute(ctx()));
+    }
+
+    @Test
+    void missingParameter_topLevelVar_notConfusedWithFalse() throws Exception {
+        EqualCondition cond = new EqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+
+        // age=20 → false (not equal to 18)
+        assertFalse(cond.execute(ctx("age", 20L)));
+        // age absent → MissingParameterException, not false
+        assertThrows(MissingParameterException.class, () -> cond.execute(ctx()));
+    }
+
+    @Test
+    void missingParameter_chainedMapKey_throwsMissingParameterException() throws Exception {
+        // chained map key miss: params.user exists but params.user.age does not
+        // → CelEvaluationException(ATTRIBUTE_NOT_FOUND), converted to MissingParameterException
+        EqualCondition cond = new EqualCondition("params.user.age", "18", ValueType.Number);
+        cond.compile();
+
+        Context ctxMissingAge = ctx("params", Map.of("user", Map.of("name", "frank")));
+        assertThrows(MissingParameterException.class, () -> cond.execute(ctxMissingAge));
+    }
+
+    @Test
+    void missingParameter_chainedMapKey_notConfusedWithFalse() throws Exception {
+        EqualCondition cond = new EqualCondition("params.user.age", "18", ValueType.Number);
+        cond.compile();
+
+        // params.user.age=20 → false
+        assertFalse(cond.execute(ctx("params", Map.of("user", Map.of("age", 20L)))));
+        // params.user.age key absent → MissingParameterException
+        assertThrows(MissingParameterException.class,
+                () -> cond.execute(ctx("params", Map.of("user", Map.of("name", "frank")))));
     }
 
     // ---- compile not called → program is null → throws ----

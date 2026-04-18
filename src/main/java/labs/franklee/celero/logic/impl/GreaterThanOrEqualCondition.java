@@ -5,7 +5,7 @@ import dev.cel.common.types.CelType;
 import dev.cel.common.types.SimpleType;
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.celero.context.Context;
-import labs.franklee.celero.exceptions.EvalException;
+import labs.franklee.celero.exceptions.MissingParameterException;
 import labs.franklee.celero.logic.base.Condition;
 import labs.franklee.celero.logic.base.ValueType;
 
@@ -61,13 +61,8 @@ public class GreaterThanOrEqualCondition extends Condition {
     }
 
     @Override
-    public boolean evaluate(Context context) {
-        try {
-            Object eval = this.program.eval(context.getEvalParam());
-            return eval instanceof Boolean b && b;
-        } catch (Throwable e) {
-            throw new EvalException(e);
-        }
+    public boolean evaluate(Context context) throws MissingParameterException {
+        return this.celEvaluate(this.program, context);
     }
 
     private void buildCelProgram(Map<String, CelType> celTypes) throws Exception {

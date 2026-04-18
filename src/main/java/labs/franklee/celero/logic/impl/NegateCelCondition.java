@@ -2,6 +2,7 @@ package labs.franklee.celero.logic.impl;
 
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.celero.context.Context;
+import labs.franklee.celero.exceptions.MissingParameterException;
 import labs.franklee.celero.logic.base.Condition;
 
 public class NegateCelCondition extends Condition {
@@ -31,13 +32,7 @@ public class NegateCelCondition extends Condition {
     }
 
     @Override
-    public boolean evaluate(Context context) {
-        try {
-            Object result = program.eval(context.getParams());
-            return result instanceof Boolean b && b;
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "CEL evaluation failed for: !(" + origin.getExpression() + ")", e);
-        }
+    public boolean evaluate(Context context) throws MissingParameterException {
+        return this.celEvaluate(this.program, context);
     }
 }

@@ -11,7 +11,7 @@ import dev.cel.common.types.SimpleType;
 import dev.cel.runtime.CelFunctionBinding;
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.celero.context.Context;
-import labs.franklee.celero.exceptions.EvalException;
+import labs.franklee.celero.exceptions.MissingParameterException;
 import labs.franklee.celero.logic.base.Condition;
 
 import java.util.Set;
@@ -59,13 +59,8 @@ public class NotRegexCondition extends Condition {
     }
 
     @Override
-    public boolean evaluate(Context context) {
-        try {
-            Object result = this.program.eval(context.getEvalParam());
-            return result instanceof Boolean b && b;
-        } catch (Throwable e) {
-            throw new EvalException(e);
-        }
+    public boolean evaluate(Context context) throws MissingParameterException {
+        return this.celEvaluate(this.program, context);
     }
 
     @Override

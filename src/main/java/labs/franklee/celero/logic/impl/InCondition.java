@@ -5,7 +5,7 @@ import dev.cel.common.types.ListType;
 import dev.cel.common.types.SimpleType;
 import dev.cel.runtime.CelRuntime;
 import labs.franklee.celero.context.Context;
-import labs.franklee.celero.exceptions.EvalException;
+import labs.franklee.celero.exceptions.MissingParameterException;
 import labs.franklee.celero.logic.base.Condition;
 
 import java.util.List;
@@ -65,13 +65,8 @@ public class InCondition extends Condition {
     }
 
     @Override
-    public boolean evaluate(Context context) {
-        try {
-            Object eval = this.program.eval(context.getEvalParam());
-            return eval instanceof Boolean b && b;
-        } catch (Throwable e) {
-            throw new EvalException(e);
-        }
+    public boolean evaluate(Context context) throws MissingParameterException {
+        return this.celEvaluate(this.program, context);
     }
 
     @Override

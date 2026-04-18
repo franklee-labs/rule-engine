@@ -24,6 +24,11 @@ public class Rule {
     private String description;
 
     /**
+     * root of rule tree(JSON rule configuration)
+     */
+    private RuleNode ruleRoot;
+
+    /**
      * root of logic tree
      */
     private Node root;
@@ -38,12 +43,17 @@ public class Rule {
         if (!b.isValid()) {
             throw new InvalidNodeException(b.getMessage());
         }
-        Relation relation = this.root.resolve();
-        this.pathGroup = relation.getPathGroup();
+        this.buildRoot();
+        this.buildSolution();
     }
 
     private void buildRoot() {
 
+    }
+
+    private void buildSolution() throws Throwable {
+        Relation relation = this.root.resolve();
+        this.pathGroup = relation.getPathGroup();
     }
 
     public String getId() {

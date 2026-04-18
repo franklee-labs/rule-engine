@@ -1,5 +1,9 @@
 package labs.franklee.celero.rules;
 
+import labs.franklee.celero.exceptions.InvalidNodeException;
+import labs.franklee.celero.logic.base.Node;
+import labs.franklee.celero.logic.base.Relation;
+import labs.franklee.celero.logic.base.Validation;
 import labs.franklee.celero.logic.path.PathGroup;
 
 public class Rule {
@@ -20,9 +24,17 @@ public class Rule {
     private String description;
 
     /**
-     * all paths to match this rule
+     * root of logic tree.
      */
-    private PathGroup pathGroup;
+    private Node root;
 
+    public void build() throws Throwable {
+        Validation b = this.root.validateAll();
+        if (!b.isValid()) {
+            throw new InvalidNodeException(b.getMessage());
+        }
+        Relation relation = this.root.resolve();
+        PathGroup pathGroup = relation.getPathGroup();
 
+    }
 }

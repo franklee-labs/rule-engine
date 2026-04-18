@@ -1,9 +1,6 @@
 package labs.franklee.celero.logic.impl;
 
-import labs.franklee.celero.logic.base.Negatable;
-import labs.franklee.celero.logic.base.Node;
-import labs.franklee.celero.logic.base.Relation;
-import labs.franklee.celero.logic.base.RelationType;
+import labs.franklee.celero.logic.base.*;
 import labs.franklee.celero.logic.path.Path;
 import labs.franklee.celero.logic.path.PathGroup;
 
@@ -17,8 +14,10 @@ public class OR extends Relation {
     }
 
     @Override
-    public boolean validate() {
-        return this.getChildren().size() >= 2;
+    public Validation validate() {
+        boolean b = this.getChildren().size() >= 2;
+        return b ? new Validation(true, null) :
+                new Validation(false, "Or node mush have at least two node.");
     }
 
     @Override
@@ -28,9 +27,6 @@ public class OR extends Relation {
 
     @Override
     public Relation resolve() throws Exception {
-        if (this.getChildren().size() < 2) {
-            throw new RuntimeException("Or node mush have at least two node.");
-        }
         Relation currentNode = null;
         for (int i = 1; i < this.getChildren().size(); i++) {
             if (currentNode == null) {

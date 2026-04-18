@@ -6,8 +6,6 @@ public abstract class Relation extends Node implements Negatable<Relation> {
 
     protected PathGroup pathGroup;
 
-    public abstract boolean validate();
-
     public abstract RelationType relation();
 
     public Relation() {

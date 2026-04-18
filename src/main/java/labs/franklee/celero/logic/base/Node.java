@@ -46,6 +46,24 @@ public abstract class Node {
         this.description = description;
     }
 
+    public Validation validateAll() {
+        Validation b = this.validate();
+        if (!b.isValid()) {
+            return b;
+        }
+        if (this.getChildren() != null && !this.getChildren().isEmpty()) {
+            for (Node child : this.getChildren()) {
+                b = child.validateAll();
+                if (!b.isValid()) {
+                    return b;
+                }
+            }
+        }
+        return b;
+    }
+
+    public abstract Validation validate();
+
     public abstract Relation resolve() throws Exception;
 
 }

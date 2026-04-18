@@ -1,9 +1,6 @@
 package labs.franklee.celero.logic.impl;
 
-import labs.franklee.celero.logic.base.Negatable;
-import labs.franklee.celero.logic.base.Node;
-import labs.franklee.celero.logic.base.Relation;
-import labs.franklee.celero.logic.base.RelationType;
+import labs.franklee.celero.logic.base.*;
 
 import java.util.Collections;
 
@@ -14,8 +11,10 @@ public class NOT extends Relation {
     }
 
     @Override
-    public boolean validate() {
-        return this.getChildren().size() == 1;
+    public Validation validate() {
+        boolean b = this.getChildren().size() == 1;
+        return b ? new Validation(true, null) :
+                new Validation(false, "Not node can only hold exactly one node.");
     }
 
     @Override
@@ -25,9 +24,6 @@ public class NOT extends Relation {
 
     @Override
     public Relation resolve() throws Exception {
-        if (this.getChildren().size() != 1) {
-            throw new RuntimeException("Not node can only hold exactly one node.");
-        }
         Node child = this.getChildren().getFirst();
         if (child instanceof Negatable) {
             return ((Negatable<?>) child).negate().resolve();

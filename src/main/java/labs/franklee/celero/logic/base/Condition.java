@@ -31,8 +31,8 @@ public abstract class Condition extends Node implements Negatable<Condition> {
         return this.priority;
     }
 
-    public boolean validate() {
-        return true;
+    public Validation validate() {
+        return new Validation(true, null);
     }
 
     public void compile() throws Exception {}
@@ -42,7 +42,7 @@ public abstract class Condition extends Node implements Negatable<Condition> {
     }
 
     public final void build() throws Exception {
-        if (!this.validate()) {
+        if (!this.validate().isValid()) {
             throw new InvalidConditionException();
         }
         this.compile();

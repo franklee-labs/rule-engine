@@ -11,10 +11,40 @@ class CelConditionTest {
 
     private static Context ctx(Object... kvs) {
         Map<String, Object> m = new java.util.HashMap<>();
-        for (int i = 0; i < kvs.length; i += 2) {
-            m.put((String) kvs[i], kvs[i + 1]);
-        }
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
         return Context.Builder.createBuilder(m).build();
+    }
+
+    private static Context ctxMissable(Object... kvs) {
+        Map<String, Object> m = new java.util.HashMap<>();
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
+        return Context.Builder.createBuilder(m).enableMissState().build();
+    }
+
+    // ---- missing parameter ----
+
+    @Test
+    void missingParameter_defaultContext_returnsFalse() throws Exception {
+        CelCondition c = new CelCondition("age > 18");
+        c.compile();
+        assertTrue(c.execute(ctx()).isFalse());
+    }
+
+    @Test
+    void missingParameter_missableContext_returnsMiss() throws Exception {
+        CelCondition c = new CelCondition("age > 18");
+        c.compile();
+        assertTrue(c.execute(ctxMissable()).isMissing());
+    }
+
+    @Test
+    void missingParameter_distinguishedFromFalse() throws Exception {
+        CelCondition c = new CelCondition("age > 18");
+        c.compile();
+        // age=16 → FALSE (not greater than 18)
+        assertTrue(c.execute(ctx("age", 16L)).isFalse());
+        // age absent + missable context → MISS (distinct from FALSE)
+        assertTrue(c.execute(ctxMissable()).isMissing());
     }
 
     // ---- CelCondition basic evaluation ----

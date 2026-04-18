@@ -16,6 +16,12 @@ class LessThanConditionTest {
         return Context.Builder.createBuilder(m).build();
     }
 
+    private static Context ctxMissable(Object... kvs) {
+        var m = new java.util.HashMap<String, Object>();
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
+        return Context.Builder.createBuilder(m).enableMissState().build();
+    }
+
     // ---- negate ----
 
     @Test
@@ -108,6 +114,32 @@ class LessThanConditionTest {
                 () -> new LessThanCondition("role", "admin", ValueType.String).compile());
         assertThrows(UnsupportedOperationException.class,
                 () -> new LessThanCondition("active", "true", ValueType.Boolean).compile());
+    }
+
+    // ---- missing parameter ----
+
+    @Test
+    void missingParameter_defaultContext_returnsFalse() throws Exception {
+        LessThanCondition cond = new LessThanCondition("age", "18", ValueType.Number);
+        cond.compile();
+        assertTrue(cond.execute(ctx()).isFalse());
+    }
+
+    @Test
+    void missingParameter_missableContext_returnsMiss() throws Exception {
+        LessThanCondition cond = new LessThanCondition("age", "18", ValueType.Number);
+        cond.compile();
+        assertTrue(cond.execute(ctxMissable()).isMissing());
+    }
+
+    @Test
+    void missingParameter_distinguishedFromFalse() throws Exception {
+        LessThanCondition cond = new LessThanCondition("age", "18", ValueType.Number);
+        cond.compile();
+        // age=19 → FALSE (greater than 18)
+        assertTrue(cond.execute(ctx("age", 19L)).isFalse());
+        // age absent + missable context → MISS (distinct from FALSE)
+        assertTrue(cond.execute(ctxMissable()).isMissing());
     }
 
     // ---- compile not called → throws ----

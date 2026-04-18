@@ -14,6 +14,12 @@ class RegexConditionTest {
         return Context.Builder.createBuilder(m).build();
     }
 
+    private static Context ctxMissable(Object... kvs) {
+        var m = new java.util.HashMap<String, Object>();
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
+        return Context.Builder.createBuilder(m).enableMissState().build();
+    }
+
     // ---- validate ----
 
     @Test
@@ -81,13 +87,30 @@ class RegexConditionTest {
         assertTrue(cond.execute(ctx("age", 42L)).isFalse());
     }
 
-    // ---- missing field → false ----
+    // ---- missing field ----
 
     @Test
-    void missingField_returnsFalse() throws Exception {
+    void missingField_defaultContext_returnsFalse() throws Exception {
         RegexCondition cond = new RegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
         cond.compile();
         assertTrue(cond.execute(ctx("other", "user@example.com")).isFalse());
+    }
+
+    @Test
+    void missingField_missableContext_returnsMiss() throws Exception {
+        RegexCondition cond = new RegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
+        cond.compile();
+        assertTrue(cond.execute(ctxMissable("other", "user@example.com")).isMissing());
+    }
+
+    @Test
+    void missingField_distinguishedFromFalse() throws Exception {
+        RegexCondition cond = new RegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
+        cond.compile();
+        // email present but no match → FALSE
+        assertTrue(cond.execute(ctx("email", "not-an-email")).isFalse());
+        // email absent + missable context → MISS (distinct from FALSE)
+        assertTrue(cond.execute(ctxMissable()).isMissing());
     }
 
     // ---- before: user context unmodified ----

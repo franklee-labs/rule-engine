@@ -16,6 +16,12 @@ class GreaterThanOrEqualConditionTest {
         return Context.Builder.createBuilder(m).build();
     }
 
+    private static Context ctxMissable(Object... kvs) {
+        var m = new java.util.HashMap<String, Object>();
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
+        return Context.Builder.createBuilder(m).enableMissState().build();
+    }
+
     // ---- negate ----
 
     @Test
@@ -108,6 +114,32 @@ class GreaterThanOrEqualConditionTest {
                 () -> new GreaterThanOrEqualCondition("role", "admin", ValueType.String).compile());
         assertThrows(UnsupportedOperationException.class,
                 () -> new GreaterThanOrEqualCondition("active", "true", ValueType.Boolean).compile());
+    }
+
+    // ---- missing parameter ----
+
+    @Test
+    void missingParameter_defaultContext_returnsFalse() throws Exception {
+        GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        assertTrue(cond.execute(ctx()).isFalse());
+    }
+
+    @Test
+    void missingParameter_missableContext_returnsMiss() throws Exception {
+        GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        assertTrue(cond.execute(ctxMissable()).isMissing());
+    }
+
+    @Test
+    void missingParameter_distinguishedFromFalse() throws Exception {
+        GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        // age=17 → FALSE (less than 18)
+        assertTrue(cond.execute(ctx("age", 17L)).isFalse());
+        // age absent + missable context → MISS (distinct from FALSE)
+        assertTrue(cond.execute(ctxMissable()).isMissing());
     }
 
     // ---- compile not called → throws ----

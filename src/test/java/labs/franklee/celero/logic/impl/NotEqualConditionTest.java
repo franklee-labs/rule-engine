@@ -16,6 +16,12 @@ class NotEqualConditionTest {
         return Context.Builder.createBuilder(m).build();
     }
 
+    private static Context ctxMissable(Object... kvs) {
+        var m = new java.util.HashMap<String, Object>();
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
+        return Context.Builder.createBuilder(m).enableMissState().build();
+    }
+
     // ---- negate ----
 
     @Test
@@ -150,6 +156,32 @@ class NotEqualConditionTest {
 
         assertTrue(ctx.getParams().keySet().stream()
                 .noneMatch(k -> k.startsWith(Constant.BUILTIN_KEY)));
+    }
+
+    // ---- missing parameter ----
+
+    @Test
+    void missingParameter_defaultContext_returnsFalse() throws Exception {
+        NotEqualCondition cond = new NotEqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        assertTrue(cond.execute(ctx()).isFalse());
+    }
+
+    @Test
+    void missingParameter_missableContext_returnsMiss() throws Exception {
+        NotEqualCondition cond = new NotEqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        assertTrue(cond.execute(ctxMissable()).isMissing());
+    }
+
+    @Test
+    void missingParameter_distinguishedFromFalse() throws Exception {
+        NotEqualCondition cond = new NotEqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        // age=18 → FALSE (equal, so not-equal is false)
+        assertTrue(cond.execute(ctx("age", 18L)).isFalse());
+        // age absent + missable context → MISS (distinct from FALSE)
+        assertTrue(cond.execute(ctxMissable()).isMissing());
     }
 
     // ---- compile not called → program is null → throws ----

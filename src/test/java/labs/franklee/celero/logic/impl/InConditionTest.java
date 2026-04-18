@@ -17,6 +17,12 @@ class InConditionTest {
         return Context.Builder.createBuilder(m).build();
     }
 
+    private static Context ctxMissable(Object... kvs) {
+        var m = new java.util.HashMap<String, Object>();
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
+        return Context.Builder.createBuilder(m).enableMissState().build();
+    }
+
     // ---- negate ----
 
     @Test
@@ -204,6 +210,32 @@ class InConditionTest {
 
         assertTrue(ctx.getParams().keySet().stream()
                 .noneMatch(k -> k.startsWith(Constant.BUILTIN_KEY)));
+    }
+
+    // ---- missing parameter ----
+
+    @Test
+    void missingParameter_defaultContext_returnsFalse() throws Exception {
+        InCondition cond = new InCondition("role", List.of("admin", "ops"));
+        cond.compile();
+        assertTrue(cond.execute(ctx()).isFalse());
+    }
+
+    @Test
+    void missingParameter_missableContext_returnsMiss() throws Exception {
+        InCondition cond = new InCondition("role", List.of("admin", "ops"));
+        cond.compile();
+        assertTrue(cond.execute(ctxMissable()).isMissing());
+    }
+
+    @Test
+    void missingParameter_distinguishedFromFalse() throws Exception {
+        InCondition cond = new InCondition("role", List.of("admin", "ops"));
+        cond.compile();
+        // role="user" → FALSE (not in list)
+        assertTrue(cond.execute(ctx("role", "user")).isFalse());
+        // role absent + missable context → MISS (distinct from FALSE)
+        assertTrue(cond.execute(ctxMissable()).isMissing());
     }
 
     // ---- compile not called → throws ----

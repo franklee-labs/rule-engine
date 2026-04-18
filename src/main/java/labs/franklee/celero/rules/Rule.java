@@ -24,9 +24,14 @@ public class Rule {
     private String description;
 
     /**
-     * root of logic tree.
+     * root of logic tree
      */
     private Node root;
+
+    /**
+     * paths to match this rule
+     */
+    private PathGroup pathGroup;
 
     public void build() throws Throwable {
         Validation b = this.root.validateAll();
@@ -34,7 +39,26 @@ public class Rule {
             throw new InvalidNodeException(b.getMessage());
         }
         Relation relation = this.root.resolve();
-        PathGroup pathGroup = relation.getPathGroup();
+        this.pathGroup = relation.getPathGroup();
+    }
 
+    private void buildRoot() {
+
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public PathGroup getPathGroup() {
+        return pathGroup;
     }
 }

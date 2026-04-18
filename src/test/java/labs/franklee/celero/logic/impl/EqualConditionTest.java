@@ -1,12 +1,12 @@
 package labs.franklee.celero.logic.impl;
 
 import labs.franklee.celero.context.Context;
-import labs.franklee.celero.exceptions.MissingParameterException;
 import labs.franklee.celero.logic.base.Relation;
 import labs.franklee.celero.logic.base.RelationType;
 import labs.franklee.celero.logic.base.ValueType;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,7 +16,13 @@ class EqualConditionTest {
     private static Context ctx(Object... kvs) {
         var m = new java.util.HashMap<String, Object>();
         for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
-        return new Context(m);
+        return Context.Builder.createBuilder(m).build();
+    }
+
+    private static Context ctxMissable(Object... kvs) {
+        var m = new java.util.HashMap<String, Object>();
+        for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
+        return Context.Builder.createBuilder(m).enableMissState().build();
     }
 
     // ---- negate ----
@@ -48,14 +54,14 @@ class EqualConditionTest {
     void string_match() throws Exception {
         EqualCondition cond = new EqualCondition("role", "admin", ValueType.String);
         cond.compile();
-        assertTrue(cond.execute(ctx("role", "admin")));
+        assertTrue(cond.execute(ctx("role", "admin")).isTrue());
     }
 
     @Test
     void string_noMatch() throws Exception {
         EqualCondition cond = new EqualCondition("role", "admin", ValueType.String);
         cond.compile();
-        assertFalse(cond.execute(ctx("role", "user")));
+        assertTrue(cond.execute(ctx("role", "user")).isFalse());
     }
 
     @Test
@@ -63,8 +69,8 @@ class EqualConditionTest {
         // value contains quotes — safe because it goes through variable binding, not expression concat
         EqualCondition cond = new EqualCondition("name", "say \"hello\"", ValueType.String);
         cond.compile();
-        assertTrue(cond.execute(ctx("name", "say \"hello\"")));
-        assertFalse(cond.execute(ctx("name", "say hello")));
+        assertTrue(cond.execute(ctx("name", "say \"hello\"")).isTrue());
+        assertTrue(cond.execute(ctx("name", "say hello")).isFalse());
     }
 
     // ---- compile + execute: Boolean ----
@@ -73,21 +79,21 @@ class EqualConditionTest {
     void boolean_true_match() throws Exception {
         EqualCondition cond = new EqualCondition("active", "true", ValueType.Boolean);
         cond.compile();
-        assertTrue(cond.execute(ctx("active", true)));
+        assertTrue(cond.execute(ctx("active", true)).isTrue());
     }
 
     @Test
     void boolean_false_match() throws Exception {
         EqualCondition cond = new EqualCondition("active", "false", ValueType.Boolean);
         cond.compile();
-        assertTrue(cond.execute(ctx("active", false)));
+        assertTrue(cond.execute(ctx("active", false)).isTrue());
     }
 
     @Test
     void boolean_noMatch() throws Exception {
         EqualCondition cond = new EqualCondition("active", "true", ValueType.Boolean);
         cond.compile();
-        assertFalse(cond.execute(ctx("active", false)));
+        assertTrue(cond.execute(ctx("active", false)).isFalse());
     }
 
     // ---- compile + execute: Number (integer) ----
@@ -96,14 +102,14 @@ class EqualConditionTest {
     void number_integer_match() throws Exception {
         EqualCondition cond = new EqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
     }
 
     @Test
     void number_integer_noMatch() throws Exception {
         EqualCondition cond = new EqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertFalse(cond.execute(ctx("age", 20L)));
+        assertTrue(cond.execute(ctx("age", 20L)).isFalse());
     }
 
     @Test
@@ -111,7 +117,7 @@ class EqualConditionTest {
         // "18.00" strips to "18" → compiled as long
         EqualCondition cond = new EqualCondition("age", "18.00", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
     }
 
     // ---- compile + execute: Number (decimal) ----
@@ -120,14 +126,14 @@ class EqualConditionTest {
     void number_decimal_match() throws Exception {
         EqualCondition cond = new EqualCondition("score", "99.5", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("score", 99.5)));
+        assertTrue(cond.execute(ctx("score", 99.5)).isTrue());
     }
 
     @Test
     void number_decimal_noMatch() throws Exception {
         EqualCondition cond = new EqualCondition("score", "99.5", ValueType.Number);
         cond.compile();
-        assertFalse(cond.execute(ctx("score", 99.0)));
+        assertTrue(cond.execute(ctx("score", 99.0)).isFalse());
     }
 
     // ---- compile + execute: Expression ----
@@ -137,8 +143,8 @@ class EqualConditionTest {
         // value is a raw CEL expression referencing another variable
         EqualCondition cond = new EqualCondition("a", "b", ValueType.Expression);
         cond.compile();
-        assertTrue(cond.execute(ctx("a", 10L, "b", 10L)));
-        assertFalse(cond.execute(ctx("a", 10L, "b", 20L)));
+        assertTrue(cond.execute(ctx("a", 10L, "b", 10L)).isTrue());
+        assertTrue(cond.execute(ctx("a", 10L, "b", 20L)).isFalse());
     }
 
     // ---- before: builtin params merged, user params unchanged ----
@@ -148,8 +154,7 @@ class EqualConditionTest {
         EqualCondition cond = new EqualCondition("role", "admin", ValueType.String);
         cond.compile();
 
-        Map<String, Object> userParams = Map.of("role", "admin");
-        Context ctx = new Context(userParams);
+        Context ctx = ctx("role", "admin");
         cond.execute(ctx);
 
         // original context must not contain any builtin keys
@@ -157,48 +162,62 @@ class EqualConditionTest {
                 .noneMatch(k -> k.startsWith(Constant.BUILTIN_KEY)));
     }
 
-    // ---- missing parameter: throws MissingParameterException instead of returning false ----
+    // ---- missing parameter: execute() catches internally ----
 
     @Test
-    void missingParameter_topLevelVar_throwsMissingParameterException() throws Exception {
-        // top-level variable absent: eval() returns CelUnknownSet, must be distinguished from false
+    void missingParameter_topLevelVar_defaultContext_returnsFalse() throws Exception {
         EqualCondition cond = new EqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertThrows(MissingParameterException.class, () -> cond.execute(ctx()));
+        assertTrue(cond.execute(ctx()).isFalse());
     }
 
     @Test
-    void missingParameter_topLevelVar_notConfusedWithFalse() throws Exception {
+    void missingParameter_topLevelVar_missableContext_returnsMiss() throws Exception {
         EqualCondition cond = new EqualCondition("age", "18", ValueType.Number);
         cond.compile();
-
-        // age=20 → false (not equal to 18)
-        assertFalse(cond.execute(ctx("age", 20L)));
-        // age absent → MissingParameterException, not false
-        assertThrows(MissingParameterException.class, () -> cond.execute(ctx()));
+        assertTrue(cond.execute(ctxMissable()).isMissing());
     }
 
     @Test
-    void missingParameter_chainedMapKey_throwsMissingParameterException() throws Exception {
+    void missingParameter_topLevelVar_distinguishedFromFalse() throws Exception {
+        EqualCondition cond = new EqualCondition("age", "18", ValueType.Number);
+        cond.compile();
+        // age=20 → EvalResult.FALSE (not equal to 18)
+        assertTrue(cond.execute(ctx("age", 20L)).isFalse());
+        // age absent + missable context → EvalResult.MISS (distinct from FALSE)
+        assertTrue(cond.execute(ctxMissable()).isMissing());
+    }
+
+    @Test
+    void missingParameter_chainedMapKey_defaultContext_returnsFalse() throws Exception {
         // chained map key miss: params.user exists but params.user.age does not
-        // → CelEvaluationException(ATTRIBUTE_NOT_FOUND), converted to MissingParameterException
         EqualCondition cond = new EqualCondition("params.user.age", "18", ValueType.Number);
         cond.compile();
-
         Context ctxMissingAge = ctx("params", Map.of("user", Map.of("name", "frank")));
-        assertThrows(MissingParameterException.class, () -> cond.execute(ctxMissingAge));
+        assertTrue(cond.execute(ctxMissingAge).isFalse());
     }
 
     @Test
-    void missingParameter_chainedMapKey_notConfusedWithFalse() throws Exception {
+    void missingParameter_chainedMapKey_missableContext_returnsMiss() throws Exception {
         EqualCondition cond = new EqualCondition("params.user.age", "18", ValueType.Number);
         cond.compile();
+        var m = new java.util.HashMap<String, Object>();
+        m.put("params", Map.of("user", Map.of("name", "frank")));
+        Context missable = Context.Builder.createBuilder(m).enableMissState().build();
+        assertTrue(cond.execute(missable).isMissing());
+    }
 
-        // params.user.age=20 → false
-        assertFalse(cond.execute(ctx("params", Map.of("user", Map.of("age", 20L)))));
-        // params.user.age key absent → MissingParameterException
-        assertThrows(MissingParameterException.class,
-                () -> cond.execute(ctx("params", Map.of("user", Map.of("name", "frank")))));
+    @Test
+    void missingParameter_chainedMapKey_distinguishedFromFalse() throws Exception {
+        EqualCondition cond = new EqualCondition("params.user.age", "18", ValueType.Number);
+        cond.compile();
+        // params.user.age=20 → EvalResult.FALSE
+        assertTrue(cond.execute(ctx("params", Map.of("user", Map.of("age", 20L)))).isFalse());
+        // params.user.age key absent + missable context → EvalResult.MISS
+        Map<String, Object> m = new HashMap<>();
+        m.put("params", Map.of("user", Map.of("name", "frank")));
+        Context missable = Context.Builder.createBuilder(m).enableMissState().build();
+        assertTrue(cond.execute(missable).isMissing());
     }
 
     // ---- compile not called → program is null → throws ----

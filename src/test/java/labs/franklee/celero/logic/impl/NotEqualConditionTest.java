@@ -6,8 +6,6 @@ import labs.franklee.celero.logic.base.RelationType;
 import labs.franklee.celero.logic.base.ValueType;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class NotEqualConditionTest {
@@ -15,7 +13,7 @@ class NotEqualConditionTest {
     private static Context ctx(Object... kvs) {
         var m = new java.util.HashMap<String, Object>();
         for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
-        return new Context(m);
+        return Context.Builder.createBuilder(m).build();
     }
 
     // ---- negate ----
@@ -47,14 +45,14 @@ class NotEqualConditionTest {
     void string_sameValue_returnsFalse() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("role", "admin", ValueType.String);
         cond.compile();
-        assertFalse(cond.execute(ctx("role", "admin")));
+        assertTrue(cond.execute(ctx("role", "admin")).isFalse());
     }
 
     @Test
     void string_differentValue_returnsTrue() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("role", "admin", ValueType.String);
         cond.compile();
-        assertTrue(cond.execute(ctx("role", "user")));
+        assertTrue(cond.execute(ctx("role", "user")).isTrue());
     }
 
     @Test
@@ -62,8 +60,8 @@ class NotEqualConditionTest {
         // value contains quotes — safe because it goes through variable binding, not expression concat
         NotEqualCondition cond = new NotEqualCondition("name", "say \"hello\"", ValueType.String);
         cond.compile();
-        assertFalse(cond.execute(ctx("name", "say \"hello\"")));
-        assertTrue(cond.execute(ctx("name", "say hello")));
+        assertTrue(cond.execute(ctx("name", "say \"hello\"")).isFalse());
+        assertTrue(cond.execute(ctx("name", "say hello")).isTrue());
     }
 
     // ---- compile + execute: Boolean ----
@@ -72,21 +70,21 @@ class NotEqualConditionTest {
     void boolean_true_sameValue_returnsFalse() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("active", "true", ValueType.Boolean);
         cond.compile();
-        assertFalse(cond.execute(ctx("active", true)));
+        assertTrue(cond.execute(ctx("active", true)).isFalse());
     }
 
     @Test
     void boolean_false_sameValue_returnsFalse() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("active", "false", ValueType.Boolean);
         cond.compile();
-        assertFalse(cond.execute(ctx("active", false)));
+        assertTrue(cond.execute(ctx("active", false)).isFalse());
     }
 
     @Test
     void boolean_differentValue_returnsTrue() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("active", "true", ValueType.Boolean);
         cond.compile();
-        assertTrue(cond.execute(ctx("active", false)));
+        assertTrue(cond.execute(ctx("active", false)).isTrue());
     }
 
     // ---- compile + execute: Number (integer) ----
@@ -95,14 +93,14 @@ class NotEqualConditionTest {
     void number_integer_sameValue_returnsFalse() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertFalse(cond.execute(ctx("age", 18L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isFalse());
     }
 
     @Test
     void number_integer_differentValue_returnsTrue() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 20L)));
+        assertTrue(cond.execute(ctx("age", 20L)).isTrue());
     }
 
     @Test
@@ -110,8 +108,8 @@ class NotEqualConditionTest {
         // "18.00" strips to "18" → compiled as long
         NotEqualCondition cond = new NotEqualCondition("age", "18.00", ValueType.Number);
         cond.compile();
-        assertFalse(cond.execute(ctx("age", 18L)));
-        assertTrue(cond.execute(ctx("age", 19L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isFalse());
+        assertTrue(cond.execute(ctx("age", 19L)).isTrue());
     }
 
     // ---- compile + execute: Number (decimal) ----
@@ -120,14 +118,14 @@ class NotEqualConditionTest {
     void number_decimal_sameValue_returnsFalse() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("score", "99.5", ValueType.Number);
         cond.compile();
-        assertFalse(cond.execute(ctx("score", 99.5)));
+        assertTrue(cond.execute(ctx("score", 99.5)).isFalse());
     }
 
     @Test
     void number_decimal_differentValue_returnsTrue() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("score", "99.5", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("score", 99.0)));
+        assertTrue(cond.execute(ctx("score", 99.0)).isTrue());
     }
 
     // ---- compile + execute: Expression ----
@@ -136,8 +134,8 @@ class NotEqualConditionTest {
     void expression_crossFieldInequality() throws Exception {
         NotEqualCondition cond = new NotEqualCondition("a", "b", ValueType.Expression);
         cond.compile();
-        assertFalse(cond.execute(ctx("a", 10L, "b", 10L)));
-        assertTrue(cond.execute(ctx("a", 10L, "b", 20L)));
+        assertTrue(cond.execute(ctx("a", 10L, "b", 10L)).isFalse());
+        assertTrue(cond.execute(ctx("a", 10L, "b", 20L)).isTrue());
     }
 
     // ---- before: builtin params not leaked into user context ----
@@ -147,8 +145,7 @@ class NotEqualConditionTest {
         NotEqualCondition cond = new NotEqualCondition("role", "admin", ValueType.String);
         cond.compile();
 
-        Map<String, Object> userParams = Map.of("role", "user");
-        Context ctx = new Context(userParams);
+        Context ctx = ctx("role", "user");
         cond.execute(ctx);
 
         assertTrue(ctx.getParams().keySet().stream()

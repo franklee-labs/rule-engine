@@ -7,7 +7,6 @@ import labs.franklee.celero.logic.base.Condition;
 
 public class CelCondition extends Condition {
 
-    private final String expression;
     private CelRuntime.Program program;
 
     public CelCondition(String expression) {
@@ -25,6 +24,11 @@ public class CelCondition extends Condition {
         Condition condition = new NegateCelCondition(this);
         condition.build();
         return condition;
+    }
+
+    @Override
+    public void before(Context context) {
+        context.buildEvalParams(null);
     }
 
     @Override

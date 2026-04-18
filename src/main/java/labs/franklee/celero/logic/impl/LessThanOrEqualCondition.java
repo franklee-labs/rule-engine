@@ -21,7 +21,6 @@ public class LessThanOrEqualCondition extends Condition {
     private final ValueType valueType;
     private final String value;
 
-    private String expression;
     private Set<String> expressionValueVars;
     private CelRuntime.Program program;
     private Map<String, Object> builtinParams;

@@ -14,7 +14,7 @@ class CelConditionTest {
         for (int i = 0; i < kvs.length; i += 2) {
             m.put((String) kvs[i], kvs[i + 1]);
         }
-        return new Context(m);
+        return Context.Builder.createBuilder(m).build();
     }
 
     // ---- CelCondition basic evaluation ----
@@ -23,14 +23,14 @@ class CelConditionTest {
     void execute_true() throws Exception {
         CelCondition c = new CelCondition("age > 18");
         c.compile();
-        assertTrue(c.execute(ctx("age", 25L)));
+        assertTrue(c.execute(ctx("age", 25L)).isTrue());
     }
 
     @Test
     void execute_false() throws Exception {
         CelCondition c = new CelCondition("age > 18");
         c.compile();
-        assertFalse(c.execute(ctx("age", 16L)));
+        assertTrue(c.execute(ctx("age", 16L)).isFalse());
     }
 
     // ---- negate() returns NegateCelCondition ----
@@ -46,8 +46,8 @@ class CelConditionTest {
         CelCondition c = new CelCondition("age > 18");
         var negated = c.negate();
 
-        assertFalse(negated.execute(ctx("age", 25L)));
-        assertTrue (negated.execute(ctx("age", 16L)));
+        assertTrue(negated.execute(ctx("age", 25L)).isFalse());
+        assertTrue(negated.execute(ctx("age", 16L)).isTrue());
     }
 
     // ---- NegateCelCondition.negate() returns the original ----
@@ -78,7 +78,7 @@ class CelConditionTest {
         Context pass = ctx("age", 25L);
         Context fail = ctx("age", 16L);
 
-        assertEquals(origin.execute(pass), doubleNegated.execute(pass));
-        assertEquals(origin.execute(fail), doubleNegated.execute(fail));
+        assertEquals(origin.execute(pass).isTrue(), doubleNegated.execute(pass).isTrue());
+        assertEquals(origin.execute(fail).isTrue(), doubleNegated.execute(fail).isTrue());
     }
 }

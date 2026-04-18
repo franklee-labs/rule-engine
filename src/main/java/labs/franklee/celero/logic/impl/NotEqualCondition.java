@@ -23,8 +23,6 @@ public class NotEqualCondition extends Condition {
 
     private final String value;
 
-    private String expression;
-
     private Set<String> expressionValueVars;
 
     private CelRuntime.Program program;

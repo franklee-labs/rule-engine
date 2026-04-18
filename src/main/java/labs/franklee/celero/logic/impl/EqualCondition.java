@@ -24,8 +24,6 @@ public class EqualCondition extends Condition {
 
     private final String value;
 
-    private String expression;
-
     private Set<String> expressionValueVars;
 
     private CelRuntime.Program program;

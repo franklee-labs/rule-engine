@@ -25,7 +25,6 @@ public class NotInCondition extends Condition {
     private final String key;
     private final List<Object> values;
 
-    private String expression;
     private Set<String> expressionValueVars;
     private CelRuntime.Program program;
     private Map<String, Object> builtinParams;

@@ -90,7 +90,7 @@ public class RegexCondition extends Condition {
     public void compile() throws Exception {
         Pattern pattern = Pattern.compile(this.regex);
 
-        String expression = FUNC_NAME + "(" + this.key + ")";
+        this.expression = FUNC_NAME + "(" + this.key + ")";
         Set<String> varNames = CelUtils.extractTopVarNames(expression);
 
         var builder = CelFactory.standardCelBuilder()

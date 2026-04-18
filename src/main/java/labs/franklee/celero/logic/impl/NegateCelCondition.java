@@ -9,16 +9,11 @@ public class NegateCelCondition extends Condition {
 
     private final CelCondition origin;
     private CelRuntime.Program program;
-    private final String expression;
 
     NegateCelCondition(CelCondition origin) {
         this.setName("NegateCelCondition");
         this.origin = origin;
         this.expression = "!(" + origin.getExpression() + ")";
-    }
-
-    public String getExpression() {
-        return expression;
     }
 
     @Override
@@ -29,6 +24,11 @@ public class NegateCelCondition extends Condition {
     @Override
     public void compile() throws Exception {
         this.program = CelUtils.buildProgram(this.expression);
+    }
+
+    @Override
+    public void before(Context context) {
+        context.buildEvalParams(null);
     }
 
     @Override

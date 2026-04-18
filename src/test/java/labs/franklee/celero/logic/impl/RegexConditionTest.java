@@ -4,8 +4,6 @@ import labs.franklee.celero.context.Context;
 import labs.franklee.celero.logic.base.Condition;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class RegexConditionTest {
@@ -13,7 +11,7 @@ class RegexConditionTest {
     private static Context ctx(Object... kvs) {
         var m = new java.util.HashMap<String, Object>();
         for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
-        return new Context(m);
+        return Context.Builder.createBuilder(m).build();
     }
 
     // ---- validate ----
@@ -56,22 +54,22 @@ class RegexConditionTest {
     void match() throws Exception {
         RegexCondition cond = new RegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
         cond.compile();
-        assertTrue(cond.execute(ctx("email", "user@example.com")));
+        assertTrue(cond.execute(ctx("email", "user@example.com")).isTrue());
     }
 
     @Test
     void noMatch() throws Exception {
         RegexCondition cond = new RegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
         cond.compile();
-        assertFalse(cond.execute(ctx("email", "not-an-email")));
+        assertTrue(cond.execute(ctx("email", "not-an-email")).isFalse());
     }
 
     @Test
     void digits_matchAndNoMatch() throws Exception {
         RegexCondition cond = new RegexCondition("code", "\\d+");
         cond.compile();
-        assertTrue(cond.execute(ctx("code", "12345")));
-        assertFalse(cond.execute(ctx("code", "123abc")));
+        assertTrue(cond.execute(ctx("code", "12345")).isTrue());
+        assertTrue(cond.execute(ctx("code", "123abc")).isFalse());
     }
 
     // ---- non-String value → false ----
@@ -80,7 +78,7 @@ class RegexConditionTest {
     void nonStringValue_returnsFalse() throws Exception {
         RegexCondition cond = new RegexCondition("age", "\\d+");
         cond.compile();
-        assertFalse(cond.execute(ctx("age", 42L)));
+        assertTrue(cond.execute(ctx("age", 42L)).isFalse());
     }
 
     // ---- missing field → false ----
@@ -89,7 +87,7 @@ class RegexConditionTest {
     void missingField_returnsFalse() throws Exception {
         RegexCondition cond = new RegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
         cond.compile();
-        assertFalse(cond.execute(ctx("other", "user@example.com")));
+        assertTrue(cond.execute(ctx("other", "user@example.com")).isFalse());
     }
 
     // ---- before: user context unmodified ----
@@ -99,8 +97,7 @@ class RegexConditionTest {
         RegexCondition cond = new RegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
         cond.compile();
 
-        Map<String, Object> userParams = Map.of("email", "user@example.com");
-        Context ctx = new Context(userParams);
+        Context ctx = ctx("email", "user@example.com");
         cond.execute(ctx);
 
         assertTrue(ctx.getParams().keySet().stream()
@@ -121,14 +118,14 @@ class RegexConditionTest {
     void notRegex_matchAndNoMatch() throws Exception {
         NotRegexCondition cond = new NotRegexCondition("email", "[\\w.+-]+@[\\w-]+\\.[\\w.]+");
         cond.compile();
-        assertTrue(cond.execute(ctx("email", "not-an-email")));
-        assertFalse(cond.execute(ctx("email", "user@example.com")));
+        assertTrue(cond.execute(ctx("email", "not-an-email")).isTrue());
+        assertTrue(cond.execute(ctx("email", "user@example.com")).isFalse());
     }
 
     @Test
     void notRegex_nonStringValue_returnsFalse() throws Exception {
         NotRegexCondition cond = new NotRegexCondition("age", "\\d+");
         cond.compile();
-        assertFalse(cond.execute(ctx("age", 42L)));
+        assertTrue(cond.execute(ctx("age", 42L)).isFalse());
     }
 }

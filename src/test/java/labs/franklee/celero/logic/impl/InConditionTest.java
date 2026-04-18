@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class InConditionTest {
@@ -16,7 +14,7 @@ class InConditionTest {
     private static Context ctx(Object... kvs) {
         var m = new java.util.HashMap<String, Object>();
         for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
-        return new Context(m);
+        return Context.Builder.createBuilder(m).build();
     }
 
     // ---- negate ----
@@ -60,23 +58,23 @@ class InConditionTest {
     void string_match_returnsTrue() throws Exception {
         InCondition cond = new InCondition("role", List.of("admin", "ops"));
         cond.compile();
-        assertTrue(cond.execute(ctx("role", "admin")));
-        assertTrue(cond.execute(ctx("role", "ops")));
+        assertTrue(cond.execute(ctx("role", "admin")).isTrue());
+        assertTrue(cond.execute(ctx("role", "ops")).isTrue());
     }
 
     @Test
     void string_noMatch_returnsFalse() throws Exception {
         InCondition cond = new InCondition("role", List.of("admin", "ops"));
         cond.compile();
-        assertFalse(cond.execute(ctx("role", "user")));
+        assertTrue(cond.execute(ctx("role", "user")).isFalse());
     }
 
     @Test
     void string_singleElement_match() throws Exception {
         InCondition cond = new InCondition("role", List.of("admin"));
         cond.compile();
-        assertTrue(cond.execute(ctx("role", "admin")));
-        assertFalse(cond.execute(ctx("role", "ops")));
+        assertTrue(cond.execute(ctx("role", "admin")).isTrue());
+        assertTrue(cond.execute(ctx("role", "ops")).isFalse());
     }
 
     // ---- compile + execute: Number (Long) ----
@@ -85,15 +83,15 @@ class InConditionTest {
     void long_match_returnsTrue() throws Exception {
         InCondition cond = new InCondition("age", List.of(18L, 25L, 30L));
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
-        assertTrue(cond.execute(ctx("age", 30L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
+        assertTrue(cond.execute(ctx("age", 30L)).isTrue());
     }
 
     @Test
     void long_noMatch_returnsFalse() throws Exception {
         InCondition cond = new InCondition("age", List.of(18L, 25L, 30L));
         cond.compile();
-        assertFalse(cond.execute(ctx("age", 20L)));
+        assertTrue(cond.execute(ctx("age", 20L)).isFalse());
     }
 
     // ---- compile + execute: Number (Double) ----
@@ -102,14 +100,14 @@ class InConditionTest {
     void double_match_returnsTrue() throws Exception {
         InCondition cond = new InCondition("score", List.of(99.5, 88.0));
         cond.compile();
-        assertTrue(cond.execute(ctx("score", 99.5)));
+        assertTrue(cond.execute(ctx("score", 99.5)).isTrue());
     }
 
     @Test
     void double_noMatch_returnsFalse() throws Exception {
         InCondition cond = new InCondition("score", List.of(99.5, 88.0));
         cond.compile();
-        assertFalse(cond.execute(ctx("score", 70.0)));
+        assertTrue(cond.execute(ctx("score", 70.0)).isFalse());
     }
 
     // ---- compile + execute: Boolean ----
@@ -118,15 +116,15 @@ class InConditionTest {
     void boolean_match_returnsTrue() throws Exception {
         InCondition cond = new InCondition("flag", List.of(true, false));
         cond.compile();
-        assertTrue(cond.execute(ctx("flag", true)));
-        assertTrue(cond.execute(ctx("flag", false)));
+        assertTrue(cond.execute(ctx("flag", true)).isTrue());
+        assertTrue(cond.execute(ctx("flag", false)).isTrue());
     }
 
     @Test
     void boolean_singleTrue_noMatch_returnsFalse() throws Exception {
         InCondition cond = new InCondition("flag", List.of(true));
         cond.compile();
-        assertFalse(cond.execute(ctx("flag", false)));
+        assertTrue(cond.execute(ctx("flag", false)).isFalse());
     }
 
     // ---- compile + execute: mixed types ----
@@ -135,17 +133,17 @@ class InConditionTest {
     void mixed_eachTypeMatches() throws Exception {
         InCondition cond = new InCondition("val", List.of("admin", 18L, 99.5, true));
         cond.compile();
-        assertTrue(cond.execute(ctx("val", "admin")));
-        assertTrue(cond.execute(ctx("val", 18L)));
-        assertTrue(cond.execute(ctx("val", 99.5)));
-        assertTrue(cond.execute(ctx("val", true)));
+        assertTrue(cond.execute(ctx("val", "admin")).isTrue());
+        assertTrue(cond.execute(ctx("val", 18L)).isTrue());
+        assertTrue(cond.execute(ctx("val", 99.5)).isTrue());
+        assertTrue(cond.execute(ctx("val", true)).isTrue());
     }
 
     @Test
     void mixed_noMatch_returnsFalse() throws Exception {
         InCondition cond = new InCondition("val", List.of("admin", 18L, 99.5, true));
         cond.compile();
-        assertFalse(cond.execute(ctx("val", "unknown")));
+        assertTrue(cond.execute(ctx("val", "unknown")).isFalse());
     }
 
     // ---- cross-type: Long field vs Double list, Double field vs Long list ----
@@ -155,7 +153,7 @@ class InConditionTest {
         // CEL performs numeric coercion between int and double: 18L == 18.0
         InCondition cond = new InCondition("age", List.of(18.0, 25.0));
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
     }
 
     @Test
@@ -163,7 +161,7 @@ class InConditionTest {
         // CEL performs numeric coercion between int and double: 18.0 == 18L
         InCondition cond = new InCondition("score", List.of(18L, 25L));
         cond.compile();
-        assertTrue(cond.execute(ctx("score", 18.0)));
+        assertTrue(cond.execute(ctx("score", 18.0)).isTrue());
     }
 
     // ---- BigDecimal normalization (deserialization scenario) ----
@@ -173,8 +171,8 @@ class InConditionTest {
         // BigDecimal("18.00") should normalize to 18L
         InCondition cond = new InCondition("age", List.of(new BigDecimal("18.00"), new BigDecimal("25")));
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
-        assertFalse(cond.execute(ctx("age", 20L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
+        assertTrue(cond.execute(ctx("age", 20L)).isFalse());
     }
 
     @Test
@@ -182,8 +180,8 @@ class InConditionTest {
         // BigDecimal("99.50") should normalize to 99.5
         InCondition cond = new InCondition("score", List.of(new BigDecimal("99.50"), new BigDecimal("88.0")));
         cond.compile();
-        assertTrue(cond.execute(ctx("score", 99.5)));
-        assertFalse(cond.execute(ctx("score", 70.0)));
+        assertTrue(cond.execute(ctx("score", 99.5)).isTrue());
+        assertTrue(cond.execute(ctx("score", 70.0)).isFalse());
     }
 
     @Test
@@ -191,7 +189,7 @@ class InConditionTest {
         // Integer should normalize to Long
         InCondition cond = new InCondition("age", List.of((Object) Integer.valueOf(18)));
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
     }
 
     // ---- before: builtin params not leaked into user context ----
@@ -201,8 +199,7 @@ class InConditionTest {
         InCondition cond = new InCondition("role", List.of("admin", "ops"));
         cond.compile();
 
-        Map<String, Object> userParams = Map.of("role", "admin");
-        Context ctx = new Context(userParams);
+        Context ctx = ctx("role", "admin");
         cond.execute(ctx);
 
         assertTrue(ctx.getParams().keySet().stream()

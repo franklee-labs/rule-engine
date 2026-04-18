@@ -13,7 +13,7 @@ class GreaterThanOrEqualConditionTest {
     private static Context ctx(Object... kvs) {
         var m = new java.util.HashMap<String, Object>();
         for (int i = 0; i < kvs.length; i += 2) m.put((String) kvs[i], kvs[i + 1]);
-        return new Context(m);
+        return Context.Builder.createBuilder(m).build();
     }
 
     // ---- negate ----
@@ -41,29 +41,29 @@ class GreaterThanOrEqualConditionTest {
     void number_integer_greater_returnsTrue() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 19L)));
+        assertTrue(cond.execute(ctx("age", 19L)).isTrue());
     }
 
     @Test
     void number_integer_equal_returnsTrue() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
     }
 
     @Test
     void number_integer_less_returnsFalse() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("age", "18", ValueType.Number);
         cond.compile();
-        assertFalse(cond.execute(ctx("age", 17L)));
+        assertTrue(cond.execute(ctx("age", 17L)).isFalse());
     }
 
     @Test
     void number_integerWithTrailingZeros_treatedAsLong() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("age", "18.00", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("age", 18L)));
-        assertFalse(cond.execute(ctx("age", 17L)));
+        assertTrue(cond.execute(ctx("age", 18L)).isTrue());
+        assertTrue(cond.execute(ctx("age", 17L)).isFalse());
     }
 
     // ---- compile + execute: Number (decimal) ----
@@ -72,21 +72,21 @@ class GreaterThanOrEqualConditionTest {
     void number_decimal_greater_returnsTrue() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("score", "99.5", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("score", 100.0)));
+        assertTrue(cond.execute(ctx("score", 100.0)).isTrue());
     }
 
     @Test
     void number_decimal_equal_returnsTrue() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("score", "99.5", ValueType.Number);
         cond.compile();
-        assertTrue(cond.execute(ctx("score", 99.5)));
+        assertTrue(cond.execute(ctx("score", 99.5)).isTrue());
     }
 
     @Test
     void number_decimal_less_returnsFalse() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("score", "99.5", ValueType.Number);
         cond.compile();
-        assertFalse(cond.execute(ctx("score", 99.0)));
+        assertTrue(cond.execute(ctx("score", 99.0)).isFalse());
     }
 
     // ---- compile + execute: Expression ----
@@ -95,9 +95,9 @@ class GreaterThanOrEqualConditionTest {
     void expression_crossField() throws Exception {
         GreaterThanOrEqualCondition cond = new GreaterThanOrEqualCondition("a", "b", ValueType.Expression);
         cond.compile();
-        assertTrue(cond.execute(ctx("a", 20L, "b", 10L)));
-        assertTrue(cond.execute(ctx("a", 10L, "b", 10L)));
-        assertFalse(cond.execute(ctx("a", 5L, "b", 10L)));
+        assertTrue(cond.execute(ctx("a", 20L, "b", 10L)).isTrue());
+        assertTrue(cond.execute(ctx("a", 10L, "b", 10L)).isTrue());
+        assertTrue(cond.execute(ctx("a", 5L, "b", 10L)).isFalse());
     }
 
     // ---- unsupported type ----

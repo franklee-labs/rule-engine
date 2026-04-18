@@ -83,7 +83,7 @@ public class Context {
     }
 
     public void setConditionEvalResult(String id, EvalResult result) {
-        this.conditionEvalResult.put(id, result);
+        this.conditionEvalResult.putIfAbsent(id, result);
     }
 
     public Boolean getConditionResult(String id) {
